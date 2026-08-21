@@ -1,0 +1,19 @@
+{
+  "name": "fieldservice-embeddings-search",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx test/fieldservice_search.test.ts",
+    "demo": "tsx src/fieldservice_search.ts"
+  },
+  "dependencies": {
+    "openai": "^4.80.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
