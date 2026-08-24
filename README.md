@@ -1,16 +1,16 @@
 # Search work-order photos while a crew is moving
 
-Here's a real field-service flow I built: dispatch pushes a work order, a tech adds a photo caption and a follow-up note, and a coordinator searches those notes later. Infrai gives you one api and an OpenAI-compatible `baseURL`, so the same TypeScript client makes embeddings with one key. That matters when you're a solo founder watching revenue per hour.
+Here's a field-service flow I actually run: dispatch pushes a work order, a tech adds a photo caption and a follow-up note, and a coordinator searches those notes later. Infrai gives you one api and an OpenAI-compatible `baseURL`, so the same TypeScript client makes embeddings with one key. As a solo founder, that's revenue-per-hour kept high — no second bill to babysit.
 
 ## The working path
 
-`workOrderSchema` is the request boundary. It takes an id, dispatch status, photo caption, and follow-up text. `FieldServiceIndex.add` checks that shape, embeds the two field notes, and stores them together. `search` embeds the coordinator's question and ranks stored orders by cosine similarity.
+`workOrderSchema` is the request boundary. It takes an id, dispatch status, photo caption, and follow-up text. `FieldServiceIndex.add` checks that shape, embeds the two field pieces, and stores them together. `search` embeds the coordinator's question and ranks stored orders by cosine similarity.
 
-The dispatch rule lives in `followUpNeeded`: an order still moving needs follow-up if its note isn't empty; a done order doesn't. I kept it out in the open instead of hiding it in a vector helper. Easier to change next week.
+The dispatch rule lives in `followUpNeeded`: an order still moving needs follow-up when its note is non-empty; done orders don't. I keep that logic in plain sight instead of hiding it in a vector helper. Outsource the undifferentiated, but own the business rule.
 
 ## Run it locally
 
-Install deps, set a key, run the deterministic test:
+Install deps, set a key, run the test:
 
 ```bash
 npm install
@@ -18,11 +18,11 @@ export INFRAI_API_KEY=your-key
 npm test
 ```
 
-Test input is one `on_site` order with `technicianFollowUp: "Order a seal"` and one `complete` order. It expects `true` and `false`. For the live embedding path, run `npm run demo`; the demo prints the decision and the next index calls without needing a specific work order.
+Input is one `on_site` order with `technicianFollowUp: "Order a seal"` and one `complete` order. Expects `true` and `false`. For the live path, run `npm run demo`; it prints the decision and index calls without needing a real order. Ship weekly, so this has to be fast to verify.
 
 ## Moving from OpenAI + Pinecone
 
-Keep your dispatch payload. Migrate in two steps: write each validated order to this index, compare top results with your current search, then swap the coordinator route after review. Behind a flag, keep the old read path so you can roll back by pointing reads there and pausing new writes. `id` gives each write a stable app identity for retry-safe orchestration.
+Keep your dispatch payload. Migrate in two steps: write validated orders to this index, compare top results with the old search, then flip the coordinator route after review. Behind a flag, keep the old read path for rollback — pause new writes and point reads back. The `id` field gives each write a stable id for retry-safe orchestration.
 
 ## Files worth copying
 
